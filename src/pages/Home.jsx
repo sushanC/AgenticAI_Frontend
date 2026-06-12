@@ -3,11 +3,17 @@ import axios from "axios";
 import Sidebar from "../components/Sidebar";
 import ChatWindow from "../components/ChatWindow";
 import MessageInput from "../components/MessageInput";
+import NotesPanel from "../components/NotesPanel";
+import TasksPanel from "../components/TasksPanel";
+import PDFPanel from "../components/PDFPanel";
 
 export default function Home() {
 
   const [messages, setMessages] =
     useState([]);
+
+  const [page, setPage] =
+  useState("chat");  
 
   async function sendMessage(
   text
@@ -73,7 +79,9 @@ export default function Home() {
       }}
     >
 
-      <Sidebar />
+      <Sidebar
+  setPage={setPage}
+/>
 
       <div
         style={{
@@ -83,9 +91,21 @@ export default function Home() {
         }}
       >
 
-        <ChatWindow
-          messages={messages}
-        />
+{
+  page === "notes"
+    ? <NotesPanel />
+
+  : page === "tasks"
+    ? <TasksPanel />
+
+  : page === "pdfs"
+    ? <PDFPanel/>
+
+  : <ChatWindow
+      messages={messages}
+    />
+
+}
 
         <MessageInput
           onSend={sendMessage}

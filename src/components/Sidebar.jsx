@@ -1,5 +1,8 @@
 import VoiceButton from "./VoiceButton";
-export default function Sidebar() {
+
+export default function Sidebar({
+  setPage
+}) {
 
   return (
 
@@ -16,11 +19,29 @@ export default function Sidebar() {
 
       <hr />
 
-      <p>📝 Notes</p>
+      <button
+        onClick={() =>
+          setPage("notes")
+        }
+      >
+        📝 Notes
+      </button>
 
-      <p>✅ Tasks</p>
+      <button
+  onClick={() =>
+    setPage("tasks")
+  }
+>
+  ✅ Tasks
+</button>
 
-      <p>📄 PDFs</p>
+      <button
+  onClick={() =>
+    setPage("pdfs")
+  }
+>
+  📄 PDFs
+</button>
 
       <VoiceButton />
 
