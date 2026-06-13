@@ -1,3 +1,5 @@
+import { motion } from "framer-motion";
+
 export default function ChatWindow({
   messages
 }) {
@@ -7,41 +9,203 @@ export default function ChatWindow({
     <div
       style={{
         flex: 1,
-        padding: "20px",
-        overflowY: "auto"
+        height: "100%",
+        padding: "20px 30px",
+        overflow: "hidden",
+        background: "#0B0F19",
+        display: "flex",
+        flexDirection: "column"
       }}
     >
 
-      <h2>Chat</h2>
+      <div
+        style={{
+          marginBottom: "20px"
+        }}
+      >
 
-      {messages.map(
-        (msg, index) => (
+        <h2
+          style={{
+            color: "#F8FAFC",
+            margin: 0,
+            fontSize: "28px"
+          }}
+        >
+          Personal Agent
+        </h2>
+
+        <p
+          style={{
+            color: "#94A3B8",
+            marginTop: "8px"
+          }}
+        >
+          Online • Memory Active
+        </p>
+
+      </div>
+
+      {
+
+        messages.length === 0
+
+        ? (
 
           <div
-            key={index}
             style={{
-              marginBottom: "15px"
+              flex: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexDirection: "column",
+              color: "#94A3B8"
             }}
           >
 
-            <strong>
+            <h1
+              style={{
+                marginBottom: "10px"
+              }}
+            >
+              Personal Agent
+            </h1>
 
-              {msg.role === "user"
-                ? "You"
-                : "AI"}
-
-              :
-
-            </strong>
-
-            {" "}
-
-            {msg.content}
+            <p>
+              Ask anything...
+            </p>
 
           </div>
+
         )
-      )}
+
+        : (
+
+          <div
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: "18px",
+              paddingTop: "10px"
+            }}
+          >
+
+            {messages.map(
+              (
+                msg,
+                index
+              ) => {
+
+                const isUser =
+                  msg.role === "user";
+
+                return (
+
+                  <motion.div
+                    key={index}
+
+                    initial={{
+                      opacity: 0,
+                      y: 20
+                    }}
+
+                    animate={{
+                      opacity: 1,
+                      y: 0
+                    }}
+
+                    transition={{
+                      duration: 0.25
+                    }}
+
+                    style={{
+                      display: "flex",
+
+                      justifyContent:
+                        isUser
+                          ? "flex-end"
+                          : "flex-start"
+                    }}
+                  >
+
+                    <div
+                      style={{
+
+                        maxWidth:
+                          "850px",
+
+                        width:
+                          "fit-content",
+
+                        padding:
+                          "16px 20px",
+
+                        borderRadius:
+                          "18px",
+
+                        background:
+                          isUser
+                            ? "linear-gradient(135deg,#6366F1,#8B5CF6)"
+                            : "rgba(255,255,255,0.05)",
+
+                        color:
+                          "#F8FAFC",
+
+                        backdropFilter:
+                          "blur(20px)",
+
+                        border:
+                          isUser
+                            ? "none"
+                            : "1px solid rgba(255,255,255,0.08)",
+
+                        boxShadow:
+                          "0 10px 30px rgba(0,0,0,.25)",
+
+                        lineHeight:
+                          "1.7"
+                      }}
+                    >
+
+                      <div
+                        style={{
+                          fontSize:
+                            "12px",
+
+                          opacity:
+                            0.7,
+
+                          marginBottom:
+                            "6px"
+                        }}
+                      >
+
+                        {
+                          isUser
+                            ? "You"
+                            : "AI Assistant"
+                        }
+
+                      </div>
+
+                      {msg.content}
+
+                    </div>
+
+                  </motion.div>
+
+                );
+              }
+            )}
+
+          </div>
+
+        )
+
+      }
 
     </div>
+
   );
 }

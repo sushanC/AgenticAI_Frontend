@@ -39,6 +39,9 @@ export default function PDFPanel() {
 
   async function uploadPDF() {
 
+    if (!file)
+      return;
+
     const form =
       new FormData();
 
@@ -52,10 +55,19 @@ export default function PDFPanel() {
       form
     );
 
+    setFile(null);
+
     loadPDFs();
   }
 
   async function askPDF() {
+
+    if (
+      !selected ||
+      !question.trim()
+    ) {
+      return;
+    }
 
     const response =
       await axios.post(
@@ -81,83 +93,330 @@ export default function PDFPanel() {
 
   return (
 
-    <div>
+    <div
+      style={{
+        flex: 1,
+        padding: "35px",
+        overflowY: "auto",
+        color: "#F8FAFC"
+      }}
+    >
 
-      <h2>
-        PDFs
-      </h2>
-
-      <input
-        type="file"
-
-        onChange={e =>
-          setFile(
-            e.target.files[0]
-          )
-        }
-      />
-
-      <button
-        onClick={uploadPDF}
-      >
-        Upload
-      </button>
-
-      <hr />
-
-      <select
-        value={selected}
-
-        onChange={e =>
-          setSelected(
-            e.target.value
-          )
-        }
+      <div
+        style={{
+          marginBottom: "30px"
+        }}
       >
 
-        <option value="">
-          Select PDF
-        </option>
+        <h1
+          style={{
+            margin: 0,
+            fontSize: "32px"
+          }}
+        >
+          PDF Knowledge Base
+        </h1>
 
-        {pdfs.map(pdf => (
+        <p
+          style={{
+            color: "#94A3B8",
+            marginTop: "10px"
+          }}
+        >
+          Upload PDFs and chat with them.
+        </p>
 
-          <option
-            key={pdf}
-            value={pdf}
+      </div>
+
+      {/* Upload Section */}
+
+      <div
+        style={{
+          background:
+            "rgba(255,255,255,0.05)",
+
+          border:
+            "1px solid rgba(255,255,255,0.08)",
+
+          borderRadius:
+            "20px",
+
+          padding: "20px",
+
+          marginBottom:
+            "25px",
+
+          backdropFilter:
+            "blur(20px)"
+        }}
+      >
+
+        <h3
+          style={{
+            marginTop: 0
+          }}
+        >
+          Upload PDF
+        </h3>
+
+        <div
+          style={{
+            display: "flex",
+            gap: "12px"
+          }}
+        >
+
+          <input
+            type="file"
+
+            onChange={e =>
+              setFile(
+                e.target.files[0]
+              )
+            }
+
+            style={{
+              flex: 1,
+              color: "#F8FAFC"
+            }}
+          />
+
+          <button
+            onClick={
+              uploadPDF
+            }
+
+            style={{
+
+              border: "none",
+
+              borderRadius:
+                "16px",
+
+              padding:
+                "0 24px",
+
+              cursor:
+                "pointer",
+
+              background:
+                "linear-gradient(135deg,#6366F1,#8B5CF6)",
+
+              color:
+                "white",
+
+              fontWeight:
+                "600"
+            }}
           >
-            {pdf}
+            Upload
+          </button>
+
+        </div>
+
+      </div>
+
+      {/* PDF Selection */}
+
+      <div
+        style={{
+          background:
+            "rgba(255,255,255,0.05)",
+
+          border:
+            "1px solid rgba(255,255,255,0.08)",
+
+          borderRadius:
+            "20px",
+
+          padding: "20px",
+
+          marginBottom:
+            "25px",
+
+          backdropFilter:
+            "blur(20px)"
+        }}
+      >
+
+        <h3
+          style={{
+            marginTop: 0
+          }}
+        >
+          Ask Questions
+        </h3>
+
+        <select
+          value={selected}
+
+          onChange={e =>
+            setSelected(
+              e.target.value
+            )
+          }
+
+          style={{
+
+            width: "100%",
+
+            padding:
+              "14px",
+
+            borderRadius:
+              "14px",
+
+            marginBottom:
+              "15px",
+
+            border:
+              "1px solid rgba(255,255,255,0.08)",
+
+            background:
+              "rgba(255,255,255,0.05)",
+
+            color:
+              "#F8FAFC"
+          }}
+        >
+
+          <option value="">
+            Select PDF
           </option>
 
-        ))}
+          {pdfs.map(pdf => (
 
-      </select>
+            <option
+              key={pdf}
+              value={pdf}
+            >
+              {pdf}
+            </option>
 
-      <br /><br />
+          ))}
 
-      <input
-        value={question}
+        </select>
 
-        onChange={e =>
-          setQuestion(
-            e.target.value
-          )
-        }
+        <div
+          style={{
+            display: "flex",
+            gap: "12px"
+          }}
+        >
 
-        placeholder=
-          "Ask PDF..."
-      />
+          <input
+            value={question}
 
-      <button
-        onClick={askPDF}
-      >
-        Ask
-      </button>
+            onChange={e =>
+              setQuestion(
+                e.target.value
+              )
+            }
 
-      <hr />
+            placeholder=
+              "Ask anything..."
 
-      <p>
-        {answer}
-      </p>
+            style={{
+
+              flex: 1,
+
+              padding:
+                "14px",
+
+              borderRadius:
+                "14px",
+
+              border:
+                "1px solid rgba(255,255,255,0.08)",
+
+              background:
+                "rgba(255,255,255,0.05)",
+
+              color:
+                "#F8FAFC",
+
+              outline:
+                "none"
+            }}
+          />
+
+          <button
+            onClick={
+              askPDF
+            }
+
+            style={{
+
+              border: "none",
+
+              borderRadius:
+                "16px",
+
+              padding:
+                "0 24px",
+
+              cursor:
+                "pointer",
+
+              background:
+                "linear-gradient(135deg,#6366F1,#8B5CF6)",
+
+              color:
+                "white",
+
+              fontWeight:
+                "600"
+            }}
+          >
+            Ask
+          </button>
+
+        </div>
+
+      </div>
+
+      {/* Answer */}
+
+      {answer && (
+
+        <div
+          style={{
+            background:
+              "rgba(255,255,255,0.05)",
+
+            border:
+              "1px solid rgba(255,255,255,0.08)",
+
+            borderRadius:
+              "20px",
+
+            padding:
+              "24px",
+
+            backdropFilter:
+              "blur(20px)",
+
+            lineHeight:
+              "1.8",
+
+            whiteSpace:
+              "pre-wrap"
+          }}
+        >
+
+          <h3
+            style={{
+              marginTop: 0
+            }}
+          >
+            Answer
+          </h3>
+
+          {answer}
+
+        </div>
+
+      )}
 
     </div>
   );
