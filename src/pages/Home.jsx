@@ -1,5 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
+import MemoryPanel
+from "../components/MemoryPanel";
+import {useEffect} from "react";
 
 import Sidebar from "../components/Sidebar";
 import ChatWindow from "../components/ChatWindow";
@@ -17,57 +20,158 @@ export default function Home() {
   const [page, setPage] =
     useState("chat");
 
-  async function sendMessage(
-    text
-  ) {
+async function sendMessage(
+  text
+) {
 
-    if (!text.trim())
-      return;
+  if (!text.trim())
+    return;
 
-    const userMessage = {
+  const assistantId =
+    Date.now();
+
+  setMessages(prev => [
+    ...prev,
+
+    {
       role: "user",
       content: text
-    };
+    },
 
-    setMessages(prev => [
-      ...prev,
-      userMessage
-    ]);
+    {
+      id: assistantId,
+      role: "assistant",
+      content: ""
+    }
+  ]);
 
-    try {
+  try {
 
-      const response =
-        await axios.post(
-          "http://localhost:3001/chat",
-          {
+    const response =
+      await fetch(
+        "http://localhost:3001/chat/stream",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
             message: text
-          }
+          })
+        }
+      );
+
+    const reader =
+      response.body.getReader();
+
+    const decoder =
+      new TextDecoder();
+
+    let fullText = "";
+
+    while (true) {
+
+      const {
+        done,
+        value
+      } =
+        await reader.read();
+
+      if (done)
+        break;
+
+      const chunk =
+        decoder.decode(
+          value
         );
 
-      const aiMessage = {
-        role: "assistant",
-        content:
-          response.data.reply
-      };
+      fullText += chunk;
 
-      setMessages(prev => [
-        ...prev,
-        aiMessage
-      ]);
+      setMessages(prev =>
+        prev.map(msg =>
 
-    } catch {
+          msg.id ===
+          assistantId
 
-      setMessages(prev => [
-        ...prev,
-        {
-          role:
-            "assistant",
-          content:
-            "Error contacting AI"
-        }
-      ]);
+            ? {
+                ...msg,
+
+                content:
+                  fullText + "▌"
+              }
+
+            : msg
+        )
+      );
     }
+
+    setMessages(prev =>
+      prev.map(msg =>
+
+        msg.id ===
+        assistantId
+
+          ? {
+              ...msg,
+
+              content:
+                fullText
+            }
+
+          : msg
+      )
+    );
+
+  } catch {
+
+    setMessages(prev =>
+      prev.map(msg =>
+
+        msg.id ===
+        assistantId
+
+          ? {
+              ...msg,
+
+              content:
+                "Streaming failed"
+            }
+
+          : msg
+      )
+    );
   }
+}
+
+async function loadHistory() {
+
+  try {
+
+    const response =
+      await axios.get(
+        "http://localhost:3001/history"
+      );
+
+setMessages(
+  response.data.slice(-50)
+);
+
+  } catch (err) {
+
+    console.error(
+      err
+    );
+  }
+}
+
+useEffect(() => {
+
+  loadHistory();
+
+}, []);
 
   return (
 
@@ -146,19 +250,23 @@ export default function Home() {
           {
             page === "notes"
 
-              ? <NotesPanel />
+? <NotesPanel />
 
-            : page === "tasks"
+: page === "tasks"
 
-              ? <TasksPanel />
+? <TasksPanel />
 
-            : page === "pdfs"
+: page === "pdfs"
 
-              ? <PDFPanel />
+? <PDFPanel />
 
-            : <ChatWindow
-                messages={messages}
-              />
+: page === "memory"
+
+? <MemoryPanel />
+
+: <ChatWindow
+    messages={messages}
+/>
           }
 
           <MessageInput

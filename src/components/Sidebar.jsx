@@ -171,8 +171,27 @@ export default function Sidebar({
         >
           ⚙ Settings
         </motion.button>
+        <motion.button
+  whileHover={{
+    scale: 1.03,
+    x: 4
+  }}
+  whileTap={{
+    scale: 0.98
+  }}
+  style={buttonStyle}
+  onClick={() =>
+    setPage("memory")
+  }
+>
+  🧠 Memory
+</motion.button>
       </div>
 
     </div>
+
+    
   );
+
+  
 }

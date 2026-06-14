@@ -1,8 +1,25 @@
 import { motion } from "framer-motion";
+import {
+  useEffect,
+  useRef
+} from "react";
 
 export default function ChatWindow({
   messages
+  
 }) {
+
+  const bottomRef =
+  useRef(null);
+
+  useEffect(() => {
+
+  bottomRef.current
+    ?.scrollIntoView({
+      behavior: "smooth"
+    });
+
+}, [messages]);
 
   return (
 
@@ -198,6 +215,7 @@ export default function ChatWindow({
                 );
               }
             )}
+            <div ref={bottomRef} />
 
           </div>
 
