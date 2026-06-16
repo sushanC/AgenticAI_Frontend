@@ -1,282 +1,99 @@
-import { useState } from "react";
-import axios from "axios";
-import MemoryPanel
-from "../components/MemoryPanel";
-import {useEffect} from "react";
+import { useState, useCallback } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Toaster } from 'react-hot-toast';
 
-import Sidebar from "../components/Sidebar";
-import ChatWindow from "../components/ChatWindow";
-import MessageInput from "../components/MessageInput";
+import Sidebar from '../components/layout/Sidebar';
+import ChatWindow from '../components/chat/ChatWindow';
+import MessageInput from '../components/chat/MessageInput';
+import MemoryPage from '../components/pages/MemoryPage';
+import TasksPage from '../components/pages/TasksPage';
+import NotesPage from '../components/pages/NotesPage';
+import PDFPage from '../components/pages/PDFPage';
 
-import NotesPanel from "../components/NotesPanel";
-import TasksPanel from "../components/TasksPanel";
-import PDFPanel from "../components/PDFPanel";
+import { useChat } from '../hooks/useChat';
+import { useTasks } from '../hooks/useTasks';
+import { useMemory } from '../hooks/useMemory';
 
 export default function Home() {
+  const [page, setPage] = useState('chat');
+  const [quickActionPrompt, setQuickActionPrompt] = useState('');
 
-  const [messages, setMessages] =
-    useState([]);
+  const { messages, isStreaming, agentPhase, agentSteps, sendMessage, clearMessages } = useChat();
+  const { tasks } = useTasks();
+  const { facts } = useMemory();
 
-  const [page, setPage] =
-    useState("chat");
+  const pendingTasks = tasks.filter(t => !t.completed).length;
 
-async function sendMessage(
-  text
-) {
+  const handleQuickAction = useCallback((prompt) => {
+    setQuickActionPrompt(prompt);
+    setPage('chat');
+  }, []);
 
-  if (!text.trim())
-    return;
-
-  const assistantId =
-    Date.now();
-
-  setMessages(prev => [
-    ...prev,
-
-    {
-      role: "user",
-      content: text
-    },
-
-    {
-      id: assistantId,
-      role: "assistant",
-      content: ""
-    }
-  ]);
-
-  try {
-
-    const response =
-      await fetch(
-        "http://localhost:3001/chat/stream",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
-
-          body: JSON.stringify({
-            message: text
-          })
-        }
-      );
-
-    const reader =
-      response.body.getReader();
-
-    const decoder =
-      new TextDecoder();
-
-    let fullText = "";
-
-    while (true) {
-
-      const {
-        done,
-        value
-      } =
-        await reader.read();
-
-      if (done)
-        break;
-
-      const chunk =
-        decoder.decode(
-          value
-        );
-
-      fullText += chunk;
-
-      setMessages(prev =>
-        prev.map(msg =>
-
-          msg.id ===
-          assistantId
-
-            ? {
-                ...msg,
-
-                content:
-                  fullText + "▌"
-              }
-
-            : msg
-        )
-      );
-    }
-
-    setMessages(prev =>
-      prev.map(msg =>
-
-        msg.id ===
-        assistantId
-
-          ? {
-              ...msg,
-
-              content:
-                fullText
-            }
-
-          : msg
-      )
-    );
-
-  } catch {
-
-    setMessages(prev =>
-      prev.map(msg =>
-
-        msg.id ===
-        assistantId
-
-          ? {
-              ...msg,
-
-              content:
-                "Streaming failed"
-            }
-
-          : msg
-      )
-    );
-  }
-}
-
-async function loadHistory() {
-
-  try {
-
-    const response =
-      await axios.get(
-        "http://localhost:3001/history"
-      );
-
-setMessages(
-  response.data.slice(-50)
-);
-
-  } catch (err) {
-
-    console.error(
-      err
-    );
-  }
-}
-
-useEffect(() => {
-
-  loadHistory();
-
-}, []);
+  const handleNewChat = useCallback(() => {
+    clearMessages();
+    setQuickActionPrompt('');
+  }, [clearMessages]);
 
   return (
-
-    <div
-      style={{
-        width: "100vw",
-        height: "100vh",
-
-        display: "flex",
-
-        background:
-          `
-          radial-gradient(
-            circle at top left,
-            rgba(99,102,241,.25),
-            transparent 35%
-          ),
-
-          radial-gradient(
-            circle at bottom right,
-            rgba(139,92,246,.20),
-            transparent 35%
-          ),
-
-          #0B0F19
-          `,
-
-        overflow: "hidden"
-      }}
-    >
-
-      <Sidebar
-        setPage={setPage}
+    <div className="app-shell">
+      <Toaster
+        position="bottom-right"
+        toastOptions={{
+          style: {
+            background: '#2F2F2F',
+            color: '#ECECEC',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '8px',
+            fontSize: '14px',
+          },
+        }}
       />
 
-      <div
-        style={{
-          flex: 1,
-          minWidth: 0,
-          height: "100vh",
+      <Sidebar
+        page={page}
+        setPage={setPage}
+        onNewChat={handleNewChat}
+        taskCount={pendingTasks}
+        memoryCount={facts.length}
+      />
 
-          padding: "16px",
-
-          display: "flex",
-          flexDirection: "column"
-        }}
-      >
-
-        <div
-          style={{
-            flex: 1,
-            minWidth: 0,
-
-            display: "flex",
-            flexDirection: "column",
-
-            background:
-              "rgba(255,255,255,0.03)",
-
-            backdropFilter:
-              "blur(24px)",
-
-            border:
-              "1px solid rgba(255,255,255,0.08)",
-
-            borderRadius:
-              "28px",
-
-            overflow: "hidden",
-
-            boxShadow:
-              "0 25px 60px rgba(0,0,0,.35)"
-          }}
-        >
-
-          {
-            page === "notes"
-
-? <NotesPanel />
-
-: page === "tasks"
-
-? <TasksPanel />
-
-: page === "pdfs"
-
-? <PDFPanel />
-
-: page === "memory"
-
-? <MemoryPanel />
-
-: <ChatWindow
-    messages={messages}
-/>
-          }
-
-          <MessageInput
-            onSend={sendMessage}
-          />
-
-        </div>
-
+      <div className="main-content">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={page}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            {page === 'notes' && <NotesPage />}
+            {page === 'tasks' && <TasksPage />}
+            {page === 'pdfs' && <PDFPage />}
+            {page === 'memory' && <MemoryPage />}
+            {page === 'chat' && (
+              <>
+                <ChatWindow
+                  messages={messages}
+                  isStreaming={isStreaming}
+                  agentPhase={agentPhase}
+                  onQuickAction={handleQuickAction}
+                  onRegenerate={() => {
+                    const lastUser = [...messages].reverse().find(m => m.role === 'user');
+                    if (lastUser) sendMessage(lastUser.content);
+                  }}
+                />
+                <MessageInput
+                  onSend={sendMessage}
+                  isStreaming={isStreaming}
+                  initialValue={quickActionPrompt}
+                  key={quickActionPrompt}
+                />
+              </>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
-
     </div>
   );
 }
