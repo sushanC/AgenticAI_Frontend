@@ -1,53 +1,139 @@
-import { useState } from 'react';
-
-const STORAGE_KEY = 'pa_tasks';
-
-function load() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  } catch { return []; }
-}
-
-function save(tasks) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-}
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 export function useTasks() {
-  const [tasks, setTasks] = useState(() => load());
 
-  function addTask(title) {
-    if (!title.trim()) return;
-    const task = {
-      id: Date.now(),
-      title: title.trim(),
-      completed: false,
-      createdAt: new Date().toISOString(),
-    };
-    setTasks(prev => {
-      const next = [task, ...prev];
-      save(next);
-      return next;
-    });
+  const [tasks, setTasks] =
+    useState([]);
+
+  useEffect(() => {
+
+    loadTasks();
+
+  }, []);
+
+  async function loadTasks() {
+
+    try {
+
+      const response =
+        await axios.get(
+          "http://localhost:3001/tasks"
+        );
+
+      setTasks(
+        response.data
+      );
+
+    } catch (err) {
+
+      console.error(
+        "Failed to load tasks",
+        err
+      );
+    }
   }
 
-  function toggleTask(id) {
-    setTasks(prev => {
-      const next = prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
-      save(next);
-      return next;
-    });
+  async function addTask(
+    title
+  ) {
+
+    if (
+      !title.trim()
+    ) return;
+
+    try {
+
+      await axios.post(
+        "http://localhost:3001/tasks",
+        {
+          text: title
+        }
+      );
+
+      await loadTasks();
+
+    } catch (err) {
+
+      console.error(
+        "Failed to add task",
+        err
+      );
+    }
   }
 
-  function deleteTask(id) {
-    setTasks(prev => {
-      const next = prev.filter(t => t.id !== id);
-      save(next);
-      return next;
-    });
+  async function toggleTask(
+  id
+) {
+
+  try {
+
+    await axios.put(
+      `http://localhost:3001/tasks/${id}`
+    );
+
+    await loadTasks();
+
+  } catch (err) {
+
+    console.error(
+      "Failed to update task",
+      err
+    );
   }
+}
 
-  const completedCount = tasks.filter(t => t.completed).length;
-  const progress = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
+async function deleteTask(
+  id
+) {
 
-  return { tasks, addTask, toggleTask, deleteTask, completedCount, progress };
+  try {
+
+    await axios.delete(
+      `http://localhost:3001/tasks/${id}`
+    );
+
+    await loadTasks();
+
+  } catch (err) {
+
+    console.error(
+      "Failed to delete task",
+      err
+    );
+  }
+}
+
+  const completedCount =
+    tasks.filter(
+      task =>
+        task.completed
+    ).length;
+
+  const progress =
+    tasks.length > 0
+
+      ? Math.round(
+          (
+            completedCount /
+            tasks.length
+          ) * 100
+        )
+
+      : 0;
+
+  return {
+
+    tasks,
+
+    addTask,
+
+    toggleTask,
+
+    deleteTask,
+
+    completedCount,
+
+    progress
+  };
 }

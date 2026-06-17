@@ -27,12 +27,26 @@ export function useMemory() {
     }
   }
 
-  async function deleteFact(id) {
-    try {
-      await axios.delete(`http://localhost:3001/memory/${id}`);
-    } catch {}
-    setFacts(prev => prev.filter(f => f.id !== id));
+  async function deleteFact(
+  id
+) {
+
+  try {
+
+    await axios.delete(
+      `http://localhost:3001/memory/${id}`
+    );
+
+    await fetchFacts();
+
+  } catch (err) {
+
+    console.error(
+      "Failed to delete memory",
+      err
+    );
   }
+}
 
   async function editFact(id, text) {
     try {

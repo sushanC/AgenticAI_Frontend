@@ -63,7 +63,7 @@ export default function TasksPage() {
                   {task.completed && '✓'}
                 </div>
                 <div className="task-content">
-                  <div className={`task-title ${task.completed ? 'done' : ''}`}>{task.title}</div>
+                  <div className={`task-title ${task.completed ? 'done' : ''}`}>{task.text}</div>
                   <div className="task-meta">{formatDate(task.createdAt)}</div>
                 </div>
                 <button className="task-delete" onClick={() => deleteTask(task.id)}>Delete</button>

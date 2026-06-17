@@ -1,16 +1,29 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect } from "react";
+import axios from "axios";
 
-const MOCK_PDFS = [
-  { id: 1, name: 'AI Research Paper.pdf', size: '2.4 MB', pages: 42, uploadedAt: new Date(Date.now() - 86400000 * 2).toISOString() },
-  { id: 2, name: 'Machine Learning Handbook.pdf', size: '5.8 MB', pages: 180, uploadedAt: new Date(Date.now() - 86400000 * 5).toISOString() },
-  { id: 3, name: 'Project Documentation.pdf', size: '0.9 MB', pages: 24, uploadedAt: new Date(Date.now() - 86400000).toISOString() },
-];
 
 function formatDate(iso) { return new Date(iso).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }); }
 
 export default function PDFPage() {
-  const [pdfs, setPdfs] = useState(MOCK_PDFS);
+
+  const [uploading, setUploading] =
+  useState(false);
+
+  const [selectedPDF, setSelectedPDF] =
+  useState(null);
+
+const [question, setQuestion] =
+  useState("");
+
+const [answer, setAnswer] =
+  useState("");
+
+const [loadingAnswer, setLoadingAnswer] =
+  useState(false);
+  const [pdfs, setPdfs] =
+  useState([]);
   const [search, setSearch] = useState('');
   const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef(null);
@@ -18,14 +31,126 @@ export default function PDFPage() {
   const filtered = pdfs.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
   const totalPages = pdfs.reduce((s, p) => s + (p.pages || 0), 0);
 
-  function handleFiles(files) {
-    const next = Array.from(files).filter(f => f.type === 'application/pdf').map(f => ({
-      id: Date.now() + Math.random(), name: f.name,
-      size: (f.size / 1024 / 1024).toFixed(1) + ' MB', pages: 0,
-      uploadedAt: new Date().toISOString(),
-    }));
-    setPdfs(prev => [...next, ...prev]);
+  async function handleFiles(files) {
+
+  setUploading(true);
+
+  try {
+
+    for (const file of files) {
+
+      const formData =
+        new FormData();
+
+      formData.append(
+        "pdf",
+        file
+      );
+
+      await axios.post(
+        "http://localhost:3001/pdf/upload",
+        formData
+      );
+    }
+
+    await loadPDFs();
+
+  } catch (err) {
+
+    console.error(
+      "Upload failed:",
+      err
+    );
+
+  } finally {
+
+    setUploading(false);
   }
+}
+async function askPDFQuestion() {
+
+  if (
+    !selectedPDF ||
+    !question.trim()
+  ) return;
+
+  setLoadingAnswer(
+    true
+  );
+
+  try {
+
+    const response =
+      await axios.post(
+        "http://localhost:3001/pdf/ask",
+        {
+          pdfName:
+            selectedPDF,
+          question
+        }
+      );
+
+    setAnswer(
+      response.data.answer
+    );
+
+  } catch (err) {
+
+    console.error(err);
+
+    setAnswer(
+      "Failed to get answer."
+    );
+
+  } finally {
+
+    setLoadingAnswer(
+      false
+    );
+  }
+}
+  useEffect(() => {
+
+  loadPDFs();
+
+}, []);
+
+async function loadPDFs() {
+
+  try {
+
+    const response =
+      await axios.get(
+        "http://localhost:3001/pdf/list"
+      );
+
+    const formatted =
+      response.data.map(
+        (
+          name,
+          index
+        ) => ({
+          id: index,
+          name,
+          size: "",
+          pages: 0,
+          uploadedAt:
+            new Date().toISOString()
+        })
+      );
+
+    setPdfs(
+      formatted
+    );
+
+  } catch (err) {
+
+    console.error(
+      "Failed to load PDFs",
+      err
+    );
+  }
+}
 
   return (
     <div className="page-container">
@@ -49,8 +174,28 @@ export default function PDFPage() {
         >
           <input ref={fileRef} type="file" accept=".pdf" multiple style={{display:'none'}} onChange={e => handleFiles(e.target.files)} />
           <div style={{fontSize:28,opacity:0.3}}>📄</div>
-          <div style={{fontSize:14,color:'var(--text-secondary)'}}>Drop PDFs here or click to upload</div>
-          <button className="upload-btn" onClick={e => e.stopPropagation()}>Browse Files</button>
+          <div
+  style={{
+    fontSize:14
+  }}
+>
+  {
+    uploading
+      ? "Uploading PDF..."
+      : "Drop PDFs here or click to upload"
+  }
+</div>
+<button
+  className="upload-btn"
+  onClick={(e) => {
+
+    e.stopPropagation();
+
+    fileRef.current?.click();
+  }}
+>
+  Browse Files
+</button>
         </div>
 
         <div className="search-bar">
@@ -59,12 +204,89 @@ export default function PDFPage() {
           {search && <button onClick={() => setSearch('')} style={{background:'none',border:'none',color:'var(--text-muted)',cursor:'pointer'}}>✕</button>}
         </div>
 
+        {selectedPDF && (
+
+  <div
+    className="content-card"
+    style={{
+      marginBottom: 20
+    }}
+  >
+
+<h3
+  style={{
+    marginBottom: 12
+  }}
+>
+  📄 {selectedPDF}
+</h3>
+
+    <textarea
+      value={question}
+      onChange={e =>
+        setQuestion(
+          e.target.value
+        )
+      }
+      placeholder="Ask something about this PDF..."
+      rows={3}
+      style={{
+        width: "100%",
+        marginTop: 10
+      }}
+    />
+
+    <button
+      className="add-btn"
+      onClick={
+        askPDFQuestion
+      }
+      disabled={
+        loadingAnswer
+      }
+      style={{
+        marginTop: 10
+      }}
+    >
+      {
+        loadingAnswer
+          ? "Thinking..."
+          : "Ask"
+      }
+    </button>
+
+    {answer && (
+
+      <div
+        style={{
+          marginTop: 20,
+          whiteSpace:
+            "pre-wrap"
+        }}
+      >
+        <strong>
+          Answer:
+        </strong>
+
+        <br />
+
+        {answer}
+      </div>
+
+    )}
+
+  </div>
+
+)}
+
         {filtered.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">📄</div>
             <div className="empty-title">No PDFs found</div>
             <div className="empty-desc">Upload PDFs to build your knowledge base</div>
+            
           </div>
+          
         ) : (
           <div className="pdf-grid">
             {filtered.map(pdf => (
@@ -75,8 +297,34 @@ export default function PDFPage() {
                   <span>{pdf.size}</span>{pdf.pages > 0 && <span>{pdf.pages} pg</span>}<span>{formatDate(pdf.uploadedAt)}</span>
                 </div>
                 <div style={{display:'flex',gap:6}}>
-                  <button className="card-btn" style={{flex:1,textAlign:'center'}}>Search</button>
-                  <button className="card-btn danger" onClick={() => setPdfs(p => p.filter(x => x.id !== pdf.id))}>Delete</button>
+<button
+  className="card-btn"
+  style={{
+    flex:1,
+    textAlign:"center"
+  }}
+onClick={() => {
+  setSelectedPDF(pdf.name);
+  setQuestion("");
+  setAnswer("");
+}}
+>
+  Ask PDF
+</button>                  <button className="card-btn danger" onClick={async () => {
+
+  try {
+
+    await axios.delete(
+      `http://localhost:3001/pdf/${encodeURIComponent(pdf.name)}`
+    );
+
+    await loadPDFs();
+
+  } catch (err) {
+
+    console.error(err);
+  }
+}}>Delete</button>
                 </div>
               </motion.div>
             ))}

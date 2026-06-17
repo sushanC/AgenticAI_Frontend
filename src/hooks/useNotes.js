@@ -1,60 +1,159 @@
-import { useState } from 'react';
-
-const STORAGE_KEY = 'pa_notes';
-
-function load() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  } catch { return []; }
-}
-
-function save(notes) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
-}
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 export function useNotes() {
-  const [notes, setNotes] = useState(() => load());
-  const [search, setSearch] = useState('');
 
-  function addNote(title, body = '') {
-    if (!title.trim()) return;
-    const note = {
-      id: Date.now(),
-      title: title.trim(),
-      body: body.trim(),
-      updatedAt: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-    };
-    setNotes(prev => {
-      const next = [note, ...prev];
-      save(next);
-      return next;
-    });
-    return note.id;
-  }
+  const [notes, setNotes] =
+    useState([]);
 
-  function updateNote(id, patch) {
-    setNotes(prev => {
-      const next = prev.map(n =>
-        n.id === id ? { ...n, ...patch, updatedAt: new Date().toISOString() } : n
+  const [search, setSearch] =
+    useState("");
+
+  useEffect(() => {
+
+    loadNotes();
+
+  }, []);
+
+  async function loadNotes() {
+
+    try {
+
+      const response =
+        await axios.get(
+          "http://localhost:3001/notes"
+        );
+
+      const formatted =
+        response.data.map(
+          note => ({
+            id: note.id,
+            title: note.content,
+            body: "",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          })
+        );
+
+      setNotes(formatted);
+
+    } catch (err) {
+
+      console.error(
+        "Failed to load notes",
+        err
       );
-      save(next);
-      return next;
-    });
+    }
   }
 
-  function deleteNote(id) {
-    setNotes(prev => {
-      const next = prev.filter(n => n.id !== id);
-      save(next);
-      return next;
-    });
+  async function addNote(
+    title,
+    body = ""
+  ) {
+
+    if (!title.trim())
+      return;
+
+    try {
+
+      await axios.post(
+        "http://localhost:3001/notes",
+        {
+          content:
+            body
+              ? `${title}\n\n${body}`
+              : title
+        }
+      );
+
+      await loadNotes();
+
+    } catch (err) {
+
+      console.error(
+        "Failed to add note",
+        err
+      );
+    }
   }
 
-  const filtered = notes.filter(n =>
-    n.title.toLowerCase().includes(search.toLowerCase()) ||
-    n.body.toLowerCase().includes(search.toLowerCase())
-  );
+async function updateNote(
+  id,
+  patch
+) {
 
-  return { notes, filtered, search, setSearch, addNote, updateNote, deleteNote };
+  try {
+
+    await axios.put(
+      `http://localhost:3001/notes/${id}`,
+      {
+        content:
+          patch.body
+            ? `${patch.title}\n\n${patch.body}`
+            : patch.title
+      }
+    );
+
+    await loadNotes();
+
+  } catch (err) {
+
+    console.error(
+      err
+    );
+  }
+}
+
+async function deleteNote(
+  id
+) {
+
+  try {
+
+    await axios.delete(
+      `http://localhost:3001/notes/${id}`
+    );
+
+    await loadNotes();
+
+  } catch (err) {
+
+    console.error(
+      err
+    );
+  }
+}
+
+  const filtered =
+    notes.filter(
+      note =>
+        note.title
+          ?.toLowerCase()
+          .includes(
+            search.toLowerCase()
+          ) ||
+
+        note.body
+          ?.toLowerCase()
+          .includes(
+            search.toLowerCase()
+          )
+    );
+
+  return {
+
+    notes,
+
+    filtered,
+
+    search,
+
+    setSearch,
+
+    addNote,
+
+    updateNote,
+
+    deleteNote
+  };
 }
