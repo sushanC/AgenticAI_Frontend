@@ -9,6 +9,7 @@ import MemoryPage from '../components/pages/MemoryPage';
 import TasksPage from '../components/pages/TasksPage';
 import NotesPage from '../components/pages/NotesPage';
 import PDFPage from '../components/pages/PDFPage';
+import SettingsPage from "../components/pages/SettingsPage";
 
 import { useChat } from '../hooks/useChat';
 import { useTasks } from '../hooks/useTasks';
@@ -71,6 +72,10 @@ export default function Home() {
             {page === 'tasks' && <TasksPage />}
             {page === 'pdfs' && <PDFPage />}
             {page === 'memory' && <MemoryPage />}
+            {
+  page === "settings" &&
+  <SettingsPage />
+}
             {page === 'chat' && (
               <>
                 <ChatWindow

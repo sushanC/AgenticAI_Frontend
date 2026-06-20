@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion';
 
 const NAV_ITEMS = [
-  { id: 'chat',   icon: '💬', label: 'Chat' },
-  { id: 'notes',  icon: '📝', label: 'Notes' },
-  { id: 'tasks',  icon: '✅', label: 'Tasks' },
-  { id: 'pdfs',   icon: '📄', label: 'PDFs' },
+  { id: 'chat', icon: '💬', label: 'Chat' },
+  { id: 'notes', icon: '📝', label: 'Notes' },
+  { id: 'tasks', icon: '✅', label: 'Tasks' },
+  { id: 'pdfs', icon: '📄', label: 'PDFs' },
   { id: 'memory', icon: '🧠', label: 'Memory' },
+  { id: 'settings', icon: '⚙️', label: 'Settings' }
 ];
 
 export default function Sidebar({ page, setPage, onNewChat, taskCount = 0, memoryCount = 0 }) {
