@@ -1,9 +1,107 @@
 import { useState } from "react";
+import axios from "axios";
 
 export default function SettingsPage() {
 
   const [model, setModel] =
     useState("DeepSeek");
+
+async function loadSettings() {
+
+  try {
+
+    const response =
+      await axios.get(
+        "http://localhost:3001/settings"
+      );
+
+    setModel(
+      response.data.model
+    );
+
+  } catch (err) {
+
+    console.error(err);
+  }
+}  
+
+async function saveModel(
+  value
+) {
+
+  try {
+
+    await axios.post(
+      "http://localhost:3001/settings",
+      {
+        model: value
+      }
+    );
+
+  } catch (err) {
+
+    console.error(err);
+  }
+}
+
+async function exportBackup() {
+
+  try {
+
+    const response =
+      await axios.get(
+        "http://localhost:3001/backup"
+      );
+
+    const blob =
+      new Blob(
+        [
+          JSON.stringify(
+            response.data,
+            null,
+            2
+          )
+        ],
+        {
+          type:
+            "application/json"
+        }
+      );
+
+    const url =
+      URL.createObjectURL(
+        blob
+      );
+
+    const a =
+      document.createElement(
+        "a"
+      );
+
+    a.href = url;
+
+    a.download =
+      "personal-agent-backup.json";
+
+    a.click();
+
+    URL.revokeObjectURL(
+      url
+    );
+
+  } catch (err) {
+
+    console.error(
+      err
+    );
+  }
+}
+
+  useEffect(() => {
+
+  loadSettings();
+
+}, []);
 
   return (
     <div className="settings-container">
@@ -15,15 +113,37 @@ export default function SettingsPage() {
       Select which model your Personal Agent uses.
     </p>
 
-    <select
-      value={model}
-      onChange={(e) => setModel(e.target.value)}
-      className="settings-select"
-    >
-      <option>DeepSeek</option>
-      <option>Gemini</option>
-      <option>OpenAI</option>
-    </select>
+<select
+  value={model}
+  onChange={(e) => {
+
+    const value =
+      e.target.value;
+
+    setModel(
+      value
+    );
+
+    saveModel(
+      value
+    );
+  }}
+  className="settings-select"
+>
+
+  <option>
+    DeepSeek
+  </option>
+
+  <option>
+    Gemini
+  </option>
+
+  <option>
+    OpenAI
+  </option>
+
+</select>
   </div>
 
   <div className="settings-card">
@@ -33,12 +153,14 @@ export default function SettingsPage() {
       Export all memories, notes, tasks and PDFs.
     </p>
 
-    <button
-      className="settings-btn"
-      onClick={exportBackup}
-    >
-      Export Backup
-    </button>
+<button
+  className="settings-btn"
+  onClick={() => {
+    alert("Backup feature coming soon");
+  }}
+>
+  Export Backup
+</button>
   </div>
 
 </div>
