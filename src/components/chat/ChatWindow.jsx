@@ -6,6 +6,7 @@ import TypingIndicator from './TypingIndicator';
 
 export default function ChatWindow({
   messages, isStreaming, agentPhase, onQuickAction, onRegenerate,
+  onConfirmed, onCancelled,
 }) {
   const bottomRef = useRef(null);
 
@@ -29,6 +30,8 @@ export default function ChatWindow({
                 message={msg}
                 isLast={i === lastAssistantIdx}
                 onRegenerate={i === lastAssistantIdx ? onRegenerate : null}
+                onConfirmed={onConfirmed}
+                onCancelled={onCancelled}
               />
             ))}
 

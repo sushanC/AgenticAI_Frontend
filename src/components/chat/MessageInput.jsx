@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const MODELS = ['DeepSeek', 'Gemini', 'Groq', 'OpenRouter', 'Ollama'];
+const MODELS = ['Auto', 'DeepSeek', 'Gemini', 'Groq', 'OpenRouter', 'Ollama'];
 
 export default function MessageInput({ onSend, isStreaming, initialValue = '' }) {
   const [text, setText] = useState(initialValue);
-  const [selectedModel, setSelectedModel] = useState('DeepSeek');
+  const [selectedModel, setSelectedModel] = useState('Auto');
   const [showModels, setShowModels] = useState(false);
   const textareaRef = useRef(null);
 
@@ -73,7 +73,7 @@ export default function MessageInput({ onSend, isStreaming, initialValue = '' })
             value={text}
             onChange={e => setText(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={isStreaming ? 'Generating...' : 'Message Personal Agent'}
+            placeholder={isStreaming ? 'Generating...' : 'Message samGPT'}
             disabled={isStreaming}
             rows={1}
           />

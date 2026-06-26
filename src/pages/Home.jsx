@@ -5,11 +5,12 @@ import { Toaster } from 'react-hot-toast';
 import Sidebar from '../components/layout/Sidebar';
 import ChatWindow from '../components/chat/ChatWindow';
 import MessageInput from '../components/chat/MessageInput';
+import DashboardPage from '../components/pages/DashboardPage';
 import MemoryPage from '../components/pages/MemoryPage';
 import TasksPage from '../components/pages/TasksPage';
 import NotesPage from '../components/pages/NotesPage';
 import PDFPage from '../components/pages/PDFPage';
-import SettingsPage from "../components/pages/SettingsPage";
+import SettingsPage from '../components/pages/SettingsPage';
 
 import { useChat } from '../hooks/useChat';
 import { useTasks } from '../hooks/useTasks';
@@ -19,7 +20,7 @@ export default function Home() {
   const [page, setPage] = useState('chat');
   const [quickActionPrompt, setQuickActionPrompt] = useState('');
 
-  const { messages, isStreaming, agentPhase, agentSteps, sendMessage, clearMessages } = useChat();
+  const { messages, isStreaming, agentPhase, sendMessage, clearMessages, handleConfirmed, handleCancelled } = useChat();
   const { tasks } = useTasks();
   const { facts } = useMemory();
 
@@ -41,9 +42,9 @@ export default function Home() {
         position="bottom-right"
         toastOptions={{
           style: {
-            background: '#2F2F2F',
-            color: '#ECECEC',
-            border: '1px solid rgba(255,255,255,0.08)',
+            background: '#1E293B',
+            color: '#F8FAFC',
+            border: '1px solid rgba(148,163,184,0.12)',
             borderRadius: '8px',
             fontSize: '14px',
           },
@@ -68,14 +69,12 @@ export default function Home() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
           >
+            {page === 'dashboard' && <DashboardPage />}
             {page === 'notes' && <NotesPage />}
             {page === 'tasks' && <TasksPage />}
             {page === 'pdfs' && <PDFPage />}
             {page === 'memory' && <MemoryPage />}
-            {
-  page === "settings" &&
-  <SettingsPage />
-}
+            {page === 'settings' && <SettingsPage />}
             {page === 'chat' && (
               <>
                 <ChatWindow
@@ -83,6 +82,8 @@ export default function Home() {
                   isStreaming={isStreaming}
                   agentPhase={agentPhase}
                   onQuickAction={handleQuickAction}
+                  onConfirmed={handleConfirmed}
+                  onCancelled={handleCancelled}
                   onRegenerate={() => {
                     const lastUser = [...messages].reverse().find(m => m.role === 'user');
                     if (lastUser) sendMessage(lastUser.content);

@@ -24,7 +24,7 @@ export default function WelcomeScreen({ onAction }) {
         transition={{ duration: 0.3 }}
         style={{ width: '100%' }}
       >
-        <div className="welcome-greeting">{getGreeting()}, Sushan</div>
+        <div className="welcome-greeting">{getGreeting()}</div>
         <div className="welcome-subtitle">How can I help you today?</div>
 
         <div className="quick-actions">

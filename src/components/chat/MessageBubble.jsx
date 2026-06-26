@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import ConfirmationCard from './ConfirmationCard';
 
 function CodeBlock({ children, className }) {
   const [copied, setCopied] = useState(false);
@@ -28,7 +29,7 @@ function CodeBlock({ children, className }) {
         language={lang}
         PreTag="div"
         customStyle={{
-          margin: 0, borderRadius: 0, background: '#1E1E1E',
+          margin: 0, borderRadius: 0, background: '#0B1120',
           fontSize: '13px', fontFamily: 'JetBrains Mono, monospace', padding: '16px',
         }}
       >
@@ -43,10 +44,39 @@ function formatTime(t) {
   return new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-export default function MessageBubble({ message, isLast, onRegenerate }) {
+export default function MessageBubble({ message, isLast, onRegenerate, onConfirmed, onCancelled }) {
   const [copied, setCopied] = useState(false);
   const isUser = message.role === 'user';
   const isStreaming = message.streaming;
+
+  // ── Phase 3: Confirmation Card ───────────────────────────────────────────
+  // If this message carries a confirmation payload, render the ConfirmationCard
+  // instead of the normal markdown bubble. All other message types are unchanged.
+  if (message.type === 'confirmation' && message.confirmationData) {
+    return (
+      <motion.div
+        className="message-row assistant"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2 }}
+      >
+        <div className="msg-avatar assistant">✦</div>
+        <div className="msg-content">
+          <div className="msg-name">samGPT</div>
+          <ConfirmationCard
+            data={message.confirmationData}
+            onConfirmed={(result) =>
+              onConfirmed && onConfirmed(result, message.confirmationData.confirmationId)
+            }
+            onCancelled={() =>
+              onCancelled && onCancelled(message.confirmationData.confirmationId)
+            }
+          />
+        </div>
+      </motion.div>
+    );
+  }
+  // ────────────────────────────────────────────────────────────────────────────
 
   function handleCopy() {
     navigator.clipboard.writeText(message.content);
@@ -68,7 +98,7 @@ export default function MessageBubble({ message, isLast, onRegenerate }) {
       <div className={`msg-content ${isUser ? 'user' : ''}`}>
         {!isUser && (
           <div className="msg-name">
-            Personal Agent
+            samGPT
             <span className="msg-time">{formatTime(message.timestamp)}</span>
           </div>
         )}

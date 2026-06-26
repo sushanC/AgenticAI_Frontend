@@ -8,6 +8,7 @@ export default function TasksPage() {
   const { tasks, addTask, toggleTask, deleteTask, completedCount, progress } = useTasks();
   const [input, setInput] = useState('');
   const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState('');
 
   function handleAdd() { if (!input.trim()) return; addTask(input.trim()); setInput(''); }
 
@@ -15,7 +16,7 @@ export default function TasksPage() {
     if (filter === 'active') return !t.completed;
     if (filter === 'done') return t.completed;
     return true;
-  });
+  }).filter(t => !search || t.text?.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div className="page-container">
@@ -38,6 +39,12 @@ export default function TasksPage() {
           <button className="add-btn" onClick={handleAdd} disabled={!input.trim()}>Add</button>
         </div>
 
+        <div className="search-bar">
+          <span className="search-icon">🔍</span>
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search tasks..." />
+          {search && <button onClick={() => setSearch('')} style={{background:'none',border:'none',color:'var(--text-muted)',cursor:'pointer'}}>✕</button>}
+        </div>
+
         <div className="filter-pills">
           {['all','active','done'].map(f => (
             <button key={f} className={`pill ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>{f}</button>
@@ -47,8 +54,8 @@ export default function TasksPage() {
         {displayed.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">✅</div>
-            <div className="empty-title">{filter === 'done' ? 'No completed tasks' : 'No tasks yet'}</div>
-            <div className="empty-desc">{filter === 'all' ? 'Add your first task above' : 'Switch filter to see tasks'}</div>
+            <div className="empty-title">{filter === 'done' ? 'No completed tasks' : search ? 'No matching tasks' : 'No tasks yet'}</div>
+            <div className="empty-desc">{filter === 'all' && !search ? 'Add your first task above' : 'Try a different filter or search'}</div>
           </div>
         ) : (
           <AnimatePresence mode="popLayout">

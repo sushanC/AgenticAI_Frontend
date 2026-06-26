@@ -1,21 +1,34 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import axios from 'axios';
 
 const NAV_ITEMS = [
+  { id: 'dashboard', icon: '📊', label: 'Dashboard' },
   { id: 'chat', icon: '💬', label: 'Chat' },
   { id: 'notes', icon: '📝', label: 'Notes' },
   { id: 'tasks', icon: '✅', label: 'Tasks' },
   { id: 'pdfs', icon: '📄', label: 'PDFs' },
   { id: 'memory', icon: '🧠', label: 'Memory' },
-  { id: 'settings', icon: '⚙️', label: 'Settings' }
+  { id: 'settings', icon: '⚙️', label: 'Settings' },
 ];
 
 export default function Sidebar({ page, setPage, onNewChat, taskCount = 0, memoryCount = 0 }) {
+  const [activeModel, setActiveModel] = useState('Auto');
+
+  useEffect(() => {
+    axios.get('http://localhost:3001/settings')
+      .then(res => {
+        if (res.data?.model) setActiveModel(res.data.model);
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="sidebar">
       <div className="sidebar-header">
         <div className="sidebar-logo">✦</div>
         <div>
-          <div className="sidebar-title">Personal Agent</div>
+          <div className="sidebar-title">samGPT</div>
           <div className="sidebar-sub">AI Assistant</div>
         </div>
       </div>
@@ -42,7 +55,7 @@ export default function Sidebar({ page, setPage, onNewChat, taskCount = 0, memor
       <div className="sidebar-bottom">
         <div className="model-pill">
           <span className="model-dot" />
-          <span>DeepSeek</span>
+          <span>{activeModel}</span>
         </div>
         <div className="sidebar-info">
           <span>Memory</span>
