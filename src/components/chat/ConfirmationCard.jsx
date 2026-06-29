@@ -68,6 +68,18 @@ export default function ConfirmationCard({ data, onConfirmed, onCancelled }) {
             <span className="confirmation-field-label">To</span>
             <span className="confirmation-field-value">{preview.to}</span>
           </div>
+          {preview.cc && (
+            <div className="confirmation-preview-field">
+              <span className="confirmation-field-label">Cc</span>
+              <span className="confirmation-field-value">{preview.cc}</span>
+            </div>
+          )}
+          {preview.bcc && (
+            <div className="confirmation-preview-field">
+              <span className="confirmation-field-label">Bcc</span>
+              <span className="confirmation-field-value">{preview.bcc}</span>
+            </div>
+          )}
           <div className="confirmation-preview-field">
             <span className="confirmation-field-label">Subject</span>
             <span className="confirmation-field-value">{preview.subject}</span>
@@ -76,6 +88,12 @@ export default function ConfirmationCard({ data, onConfirmed, onCancelled }) {
             <div className="confirmation-preview-body">
               <span className="confirmation-field-label">Message</span>
               <div className="confirmation-body-text">{preview.body}</div>
+            </div>
+          )}
+          {preview.signature && (
+            <div className="confirmation-preview-field" style={{ marginTop: '8px', borderTop: '1px dashed #444', paddingTop: '8px' }}>
+              <span className="confirmation-field-label">Signature</span>
+              <span className="confirmation-field-value" style={{ fontStyle: 'italic', opacity: 0.8 }}>{preview.signature}</span>
             </div>
           )}
         </div>

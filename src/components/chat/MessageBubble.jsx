@@ -49,6 +49,41 @@ export default function MessageBubble({ message, isLast, onRegenerate, onConfirm
   const isUser = message.role === 'user';
   const isStreaming = message.streaming;
 
+  // ── Phase 5: Waiting Input Card ───────────────────────────────────────
+  // Renders when the email tool is waiting for a missing email address.
+  // The user's next typed message is routed to /email/provide-input by useChat.
+  if (message.type === 'waiting_input' && message.waitingData) {
+    const { question, draft } = message.waitingData;
+    return (
+      <motion.div
+        className="message-row assistant"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2 }}
+      >
+        <div className="msg-avatar assistant">❆</div>
+        <div className="msg-content">
+          <div className="msg-name">samGPT</div>
+          <div className="waiting-input-card">
+            <div className="waiting-input-header">
+              <span className="waiting-input-icon">📧</span>
+              <span className="waiting-input-label">Email Draft — Info Needed</span>
+            </div>
+            {draft?.subject && (
+              <div className="waiting-input-draft-preview">
+                <span className="waiting-field-label">Subject</span>
+                <span className="waiting-field-value">{draft.subject}</span>
+              </div>
+            )}
+            <p className="waiting-input-question">{question}</p>
+            <p className="waiting-input-hint">💬 Type the email address below and press Enter to continue.</p>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+  // ───────────────────────────────────────────────────────────────────────────
+
   // ── Phase 3: Confirmation Card ───────────────────────────────────────────
   // If this message carries a confirmation payload, render the ConfirmationCard
   // instead of the normal markdown bubble. All other message types are unchanged.

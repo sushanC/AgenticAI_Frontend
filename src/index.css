@@ -839,3 +839,107 @@ img, svg { display: block; }
   font-size: 13px;
   color: var(--text-secondary);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Phase 5 — Conversational Action Framework
+   WaitingInputCard styles (email tool waiting for recipient)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.waiting-input-card {
+  margin: 4px 0 8px;
+  padding: 14px 18px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  max-width: 520px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Amber left accent bar — visually distinct from the blue confirmation bar */
+.waiting-input-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: #f59e0b;
+  border-radius: var(--radius-xs) 0 0 var(--radius-xs);
+  animation: waitingPulse 2s ease-in-out infinite;
+}
+
+@keyframes waitingPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+
+/* Header row */
+.waiting-input-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.waiting-input-icon {
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.waiting-input-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  white-space: nowrap;
+}
+
+/* Subject preview inside the card */
+.waiting-input-draft-preview {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.waiting-field-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  min-width: 52px;
+  flex-shrink: 0;
+}
+
+.waiting-field-value {
+  font-size: 13px;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+/* The question the AI is asking */
+.waiting-input-question {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Hint text below the question */
+.waiting-input-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
